@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from rest_framework import viewsets
+from rest_framework import response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -59,6 +60,8 @@ class HelloApiView(APIView):
 class  HelloViewSet(viewsets. ViewSet):
     """Test Api ViewSet"""
     
+    serializer_class = serializers.HelloSerializer
+    
     def list(self, request):
         """return a hellp message"""
         
@@ -69,3 +72,33 @@ class  HelloViewSet(viewsets. ViewSet):
         ]
         
         return Response({'message': 'hello', 'a_viewset': a_viewset})
+    
+    def create(self, request):
+        """Create a new hello  message"""
+        
+        serializer = serializers.HelloSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            name = serializer.data.get('name')
+            message = 'Hello {0}'.format(name)
+            return Response({'message': message})
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def retriever(self, rerquest, pk=None):
+        """Handle geting an object by its ID"""
+        return Response ({'http_method': 'GET'})
+    
+    def update(self, request, pk=None):
+        """Handles updating  part of an object"""
+        return Response({'http_method', 'PUT'})
+    
+    def partial_update(self, request,  pk=None):
+        """Handles updating part of an object"""
+        return Response({'http_method': 'PATCh'})
+    
+    def  destroy(self, request, pk=None):
+        """Handles removing an object"""
+        return Response({'http_method': 'DELETE'})
+    
+    
