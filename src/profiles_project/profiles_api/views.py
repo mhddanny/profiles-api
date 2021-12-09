@@ -8,8 +8,10 @@ from rest_framework.authentication import  TokenAuthentication
 from rest_framework import filters
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 
-from . import  serializers
+from . import serializers
 from . import models
 from . import permissions
 
@@ -24,14 +26,14 @@ class HelloApiView(APIView):
 
     def get(self, request,  format=None):
         """Returns a list of APIView feature"""
-        an_apiview = [
+        a_viewset = [
             'Uses HTTP methods as function (get, post, pacth, put, delete)',
             'It is  similiar to a tradisional Django',
             'Gives you the most control over your logic',
             'Is mapped manually to URLs'
         ]
         
-        return Response({'message': 'Hello', 'an_apiview': an_apiview})
+        return Response({'message': 'Hello', 'a_viewset': a_viewset})
     
     def post(self, request):
         """"Create a hallo message with our name"""
@@ -125,4 +127,17 @@ class LoginViewSet(viewsets.ViewSet,):
         """Use the ObthainAuthToken APIView to valide and create too token."""
         
         # return ObtainAuthToken().post(request)
-        return ObtainAuthToken().post(request)
+        return ObtainAuthToken().as_view()(request=request._request)
+    
+class UserProfileFeedViewSet(viewsets.ModelViewSet):
+    """Handles creating, reading anf updating profile"""
+    
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.ProfileFeedItemSerializer
+    queryset = models.ProfileFeedItem.objects.all()
+    permission_classes = (permissions.PostOwnStatus, IsAuthenticated)
+    
+    def perform_create(self, serializer):
+        """Setts the user profile to  the logged in  user."""
+        
+        serializer.save(user_profile=self.request.user)
